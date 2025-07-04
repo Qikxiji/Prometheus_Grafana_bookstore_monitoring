@@ -38,7 +38,7 @@ $PROJECT_ROOT
 ├── compose.yaml                # файл конфигурации и запуска сервисов nginx, mysql, prometheus, grafana, node_exporter, nginx_exporter, mysql_exporter
 ```
 ## Содержание проекта
-1. В работу был принят проект развёртывания шаблонного сайта `github.com/Qikxiji/PHP_MySQL_bookstore_deploy`.
+1. В работу был принят проект развёртывания шаблонного сайта [github.com/Qikxiji/PHP_MySQL_bookstore_deploy](https://github.com/Qikxiji/PHP_MySQL_bookstore_deploy).
 2. Полученный проект был дополнен системой мониторинга на основе Prometheus и Grafana. Выполнены следующие этапы проектирования:
  - Определены объекты мониторинга, ими стали: хостовая машина (мониторятся ресурсы ОЗУ, ЦПУ, диска, сети и т.д.), веб-сервер Nginx(состояние сервера, количество запросов м подключений), сервер MySQL (подключения, запросы, транзакции, нагрузка на сеть и др.).
  - Определены инструменты мониторинга: prometheus для централизованного хранения метрик, node exporter, nginx exporter и mysql exporter для сбора метрик, grafana для визуализации данных. 
@@ -55,7 +55,7 @@ $PROJECT_ROOT
 - Клонировать репозиторий 
 
 ```bash
-git clone https://github.com/Qikxiji/... .
+git clone https://github.com/Qikxiji/Prometheus_Grafana_bookstore_monitoring .
 ```  
 
 - Перейдите в корневую папку приложения (с файлом compose.yaml), соберите и запустите приложение следующей командой: 
