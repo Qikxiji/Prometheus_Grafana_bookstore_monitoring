@@ -67,7 +67,7 @@ docker compose up -d
 После запуска откройте в браузере:
  - [localhost:8080](http://localhost:8080) ─ веб-сайт
  - [localhost:9090](http://localhost:9090) ─ prometheus
- - [localhost:3000](http://localhost:3000) ─ grafana (<u>login: admin password: grafana</u>, можно поменять в файле compose.yaml)
+ - [localhost:3000](http://localhost:3000) ─ grafana (**login: admin password: grafana**, можно поменять в файле compose.yaml)
 
 
 
