@@ -1,0 +1,151 @@
+services:
+  nginx:
+    container_name: nginx_bookstore
+    build:
+      context: ./nginx
+    ports:
+      - 127.0.0.1:8080:8080
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.10
+
+
+  mysql:
+    container_name: mysql_bookstore
+    build:
+      context: ./db
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.16
+    secrets:
+      - mysql_root_password
+
+#-----------------------------------------------------
+#----------------MONITORING SECTION-------------------
+#-----------------------------------------------------
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 127.0.0.1:9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus/
+      - prom_data:/prometheus
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.20
+
+
+  node_exporter:
+    image: bitnami/node-exporter:1.9.1-debian-12-r10
+    container_name: node_exporter
+    ports:
+      - 127.0.0.1:9100:9100
+    restart: unless-stopped
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.21
+  
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:1.4
+    container_name: nginx_exporter
+    command:
+      - '--nginx.scrape-uri=http://nginx_bookstore:8080/stub_status'
+    ports:
+      - 127.0.0.1:9113:9113
+    restart: unless-stopped
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.22
+    depends_on:
+      nginx:
+        condition: service_started
+
+
+  mysql_exporter:
+    image: prom/mysqld-exporter:main
+    container_name: mysql_exporter
+    ports:
+      - 127.0.0.1:9104:9104
+    command:
+      - '--collect.mysql.user'
+      - '--collect.binlog_size'
+      - '--collect.slave_status'
+      - '--collect.global_status'
+      - '--collect.global_variables'
+      - '--collect.info_schema.tables'
+      - '--collect.info_schema.userstats'
+      - '--collect.info_schema.tablestats'
+      - '--collect.info_schema.processlist'
+      - '--collect.info_schema.innodb_metrics'
+      - '--collect.info_schema.tables.databases=*'
+      - '--collect.info_schema.query_response_time'
+      - '--collect.perf_schema.tablelocks'
+      - '--collect.perf_schema.file_events'
+      - '--collect.perf_schema.eventswaits'
+      - '--collect.perf_schema.tableiowaits'
+      - '--collect.perf_schema.indexiowaits'
+    volumes:
+      - type: bind
+        source: ./prometheus/mysql_exporter_cnf
+        target: /.my.cnf
+    restart: unless-stopped
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.23
+    depends_on:
+      mysql:
+        condition: service_started
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 127.0.0.1:3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      #- GF_DASHBOARDS_JSON_FILES_ENABLED=true
+    volumes:
+      - ./grafana/grafana.db:/var/lib/grafana/grafana.db
+      - ./grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    networks:
+      bookstore-net:
+        ipv4_address: 172.16.16.30
+
+
+networks:
+  bookstore-net:
+    driver: bridge
+    enable_ipv6: false
+    ipam:
+      config:
+        - subnet: 172.16.16.0/24
+          ip_range: 172.16.16.0/24
+          gateway: 172.16.16.1
+
+
+volumes:
+  mysql_data:
+  prom_data:
+
+
+secrets:
+  mysql_root_password:
+    file: ./db/root_password.txt
+    
+
+
+    

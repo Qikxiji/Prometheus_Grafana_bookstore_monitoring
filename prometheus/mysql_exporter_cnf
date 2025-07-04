@@ -1,0 +1,6 @@
+[client]
+user=exporter
+password=exporter_pass
+host=172.16.16.16
+
+
